@@ -6,8 +6,15 @@ __pycache__/
 # C extensions
 *.so
 
+# VCD and trace files
+*.vcd
+*.json
+*.txt
+
 # Distribution / packaging
 .Python
+.vscode/
+.idea/
 build/
 develop-eggs/
 dist/
