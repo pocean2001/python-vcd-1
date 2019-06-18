@@ -12,49 +12,44 @@ def parse_commit_log(file):
         lines = f.readlines()
         for line in lines:
                 items = [i for i in line.rstrip("\n").split()]
-
-                """ get the ramdom seed"""
-                if line == lines[0]:
-                        seed =  int(items[3])
-                else:
-                        if items[0] == "i":
+                if items[0] == "i":
                                 inst = {}
                                 inst["type"] = "int"
-                                inst["count"] = int(items[1])
-                                inst["priv"] = int(items[2])
+                                inst["priv"] = int(items[1])
+                                inst["count"] = int(items[2])
                                 inst["addr"] = int(items[3], 16)
                                 inst["inst"] = int(items[4], 16)
                                 inst_list.append(inst)
-                        elif items[0] == "o":
+                elif items[0] == "o":
                                 inst = {}
                                 inst["type"] = "others"
-                                inst["count"] = int(items[1])
-                                inst["priv"] = int(items[2])
+                                inst["priv"] = int(items[1])
+                                inst["count"] = int(items[2])
                                 inst["addr"] = int(items[3], 16)
                                 inst["inst"] = int(items[4], 16)
                                 inst_list.append(inst)
-        logging.info("seed:{}".format(seed))
-        logging.info("first inst:{}".format(inst_list[0]))
+        print("seed:{}".format(seed))
+        print("first inst:{}".format(inst_list[0]))
     return inst_list, seed
 
-def import_json(file_name):
-    with open(file_name, "r") as f:
-        signal_txt = f.read()
-        signal_json = json.loads(signal_txt)
-        return signal_json
+def import_signals(file_path: str):
+    with open(file_path, "r") as w:
+        signal_list = json.load(w)
+    signal_list.append("TOP.TestHarness.dut.tile.core.debug_tsc_reg[63:0]")
+    return signal_list
 
 def search_time(debug_tsc, signal_json):
-    tsc_key = find_signal_key("debug_tsc_reg[63:0]", signal_json)
+    tsc_key = find_signal_key("TOP.TestHarness.dut.tile.core.debug_tsc_reg[63:0]", signal_json)
     tv_list = signal_json.get(tsc_key).get("tv")
-    tick = tv_list[debug_tsc+1][0]
-    return tick
+    tick, tsc = tv_list[debug_tsc+1][0], tv_list[debug_tsc+1][1] 
+    return tick, tsc
 
 def find_signal_key(signal_name, signal_json:dict):
     global signal_name_cache
-    if signal_name_cache.get(signal_name, None) == None:
+    if signal_name not in signal_name_cache:
         for key, value in zip(signal_json.keys(), signal_json.values()):
             for i in range(len(value["nets"])):
-                if value["nets"][i]["name"] == signal_name:
+                if value["nets"][i]["hier"] + "." + value["nets"][i]["name"] == signal_name:
                     signal_name_cache[signal_name] = key
                     return key
     else:
