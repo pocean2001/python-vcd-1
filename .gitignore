@@ -11,6 +11,9 @@ __pycache__/
 *.json
 *.txt
 
+# Pickle files
+*.pickle
+
 !example/*.py
 
 # Distribution / packaging
